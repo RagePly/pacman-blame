@@ -2,3 +2,6 @@
 
 # ignore any local tools
 /tools
+
+# ignore tags file
+tags
