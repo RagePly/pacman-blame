@@ -131,7 +131,7 @@ fn expand_short<I: IntoIterator<Item = String>>(
     options: I,
 ) -> impl IntoIterator<Item = Result<String, ArgError>> {
     options.into_iter().map(|option| {
-        if !option.starts_with("-") || option.starts_with("--") {
+        if !is_short_option(&option) {
             Ok(option)
         } else {
             OPT_LIST
