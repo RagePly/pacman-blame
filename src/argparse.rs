@@ -55,7 +55,7 @@ const fn suboption(
         long,
         comment,
         group: Some(group),
-        takes_value: false
+        takes_value: false,
     }
 }
 
@@ -84,7 +84,6 @@ const fn option_long_value(long: &'static str, comment: &'static str) -> CliOpti
     }
 }
 
-
 const OPT_HELP: CliOption = option("-h", "--help", "display on any item");
 const OPT_VERBOSE: CliOption = option("-v", "--verbose", "print information of what is going on");
 const OPT_COLOR: CliOption = option("-c", "--color", "use colors on terminals that support them");
@@ -92,9 +91,9 @@ const OPT_FORMAT: CliOption = option_long_value("--format", "print using the for
 const OPT_API_LIST: CliOption = option("-L", "--list", "utilities for listing packages");
 const OPT_API_LIST_REQUIRED_BY: CliOption = suboption(
     &OPT_API_LIST,
-    "-r", 
-    "--required-by", 
-    "show packages that requires this package"
+    "-r",
+    "--required-by",
+    "show packages that requires this package",
 );
 
 const OPT_API_LIST_EXPLICIT: CliOption = suboption(
@@ -274,7 +273,7 @@ pub struct CommonOptions {
 
 impl Default for CommonOptions {
     fn default() -> CommonOptions {
-        CommonOptions { 
+        CommonOptions {
             verbose: false,
             color: false,
             format: None,

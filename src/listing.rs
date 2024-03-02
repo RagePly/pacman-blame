@@ -1,16 +1,15 @@
 use super::argparse::{ApiList as ListOptions, CommonOptions};
+use super::output::CompiledFormat;
 use super::query::Query;
 use super::ProgramError;
-use super::output::CompiledFormat;
-use alpm::{Alpm, PackageReason, Db, Pkg};
+use alpm::{Alpm, Db, PackageReason, Pkg};
 use std::collections::VecDeque;
-
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum ReasonSelector {
     Both,
     Explicit,
-    Depend
+    Depend,
 }
 
 trait Reason {
@@ -26,10 +25,10 @@ impl ReasonSelector {
             _ => None,
         }
     }
-    
+
     fn test<R: Reason>(self, r: &R) -> bool {
-        matches!(self, ReasonSelector::Both) || 
-            matches!(self, ReasonSelector::Explicit) == r.is_explicit()
+        matches!(self, ReasonSelector::Both)
+            || matches!(self, ReasonSelector::Explicit) == r.is_explicit()
     }
     fn new(explicit: bool, dependency: bool) -> ReasonSelector {
         match (explicit, dependency) {
@@ -56,7 +55,7 @@ impl ReqByItem {
     fn draw(self, color: bool) -> String {
         match self {
             ReqByItem::Explicit(name) if color => format!("\x1b[33m{}\x1b[m", name),
-            ReqByItem::Explicit(name) | ReqByItem::Depend(name) => format!("{}", name), 
+            ReqByItem::Explicit(name) | ReqByItem::Depend(name) => format!("{}", name),
         }
     }
 }
@@ -74,14 +73,14 @@ fn find_required_by<'h>(db: Db<'h>, pkg: Pkg<'h>, reason_filter: ReasonSelector)
                 eprintln!("failed to fetch info for {}", name);
                 continue;
             };
-            
+
             let reason = pkg.reason();
             let req = match reason {
                 PackageReason::Explicit => ReqByItem::Explicit(name),
                 PackageReason::Depend => ReqByItem::Depend(name),
             };
 
-            if required_by.contains(&req) { 
+            if required_by.contains(&req) {
                 continue;
             }
 
@@ -90,7 +89,10 @@ fn find_required_by<'h>(db: Db<'h>, pkg: Pkg<'h>, reason_filter: ReasonSelector)
         }
     }
 
-    required_by.into_iter().filter(|r| reason_filter.test(r)).collect()
+    required_by
+        .into_iter()
+        .filter(|r| reason_filter.test(r))
+        .collect()
 }
 
 pub fn list_packages(
@@ -103,16 +105,19 @@ pub fn list_packages(
     }: ListOptions,
     CommonOptions { color, format, .. }: CommonOptions,
 ) -> Result<(), ProgramError> {
-    
     let compiled_format = match &format {
-            Some(f) => CompiledFormat::compile(f.as_str()).ok_or(ProgramError::InvalidFormat(f.clone()))?,
-            None => CompiledFormat::default(),
+        Some(f) => {
+            CompiledFormat::compile(f.as_str()).ok_or(ProgramError::InvalidFormat(f.clone()))?
+        }
+        None => CompiledFormat::default(),
     };
 
     let number_queries = queries.len();
-    
+
     if number_queries == 0 && required_by {
-        return Err(ProgramError::InvalidRequest("you cannot use --required-by without specifying packages".to_string()));
+        return Err(ProgramError::InvalidRequest(
+            "you cannot use --required-by without specifying packages".to_string(),
+        ));
     }
 
     let filter = ReasonSelector::new(explicit, dependency);
@@ -142,8 +147,11 @@ pub fn list_packages(
     let mut lines: Vec<String> = Vec::new();
     for pkg in pkgs.into_iter() {
         if required_by {
-            let reqby: Vec<_> = find_required_by(local, *pkg, filter).into_iter().map(|r| r.draw(color)).collect();
-            if ! reqby.is_empty() {
+            let reqby: Vec<_> = find_required_by(local, *pkg, filter)
+                .into_iter()
+                .map(|r| r.draw(color))
+                .collect();
+            if !reqby.is_empty() {
                 lines.push(reqby.join(" "));
             }
         } else if filter.filter(pkg.reason()).is_some() {

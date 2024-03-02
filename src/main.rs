@@ -6,8 +6,8 @@ use std::process::ExitCode;
 
 mod argparse;
 mod listing;
-mod query;
 mod output;
+mod query;
 
 #[derive(Debug)]
 enum ProgramError {
@@ -46,7 +46,7 @@ fn print_helptext(option_text: String) {
         "QUERY:".to_string(),
         "[package:]<package-name>  search the database for the exact name".to_string(),
         "".to_string(),
-        "Use -h|--help after an option for more details".to_string()
+        "Use -h|--help after an option for more details".to_string(),
     ];
 
     println!("{}", lines.join("\n"));
@@ -63,8 +63,13 @@ fn main() -> ExitCode {
 
     match api {
         argparse::Api::Empty => println!("no command specified, use pacman-blame -h for help"),
-        argparse::Api::Help => print_helptext(argparse::print_argument_group(None).expect("None is valid group")),
-        argparse::Api::HelpWith(opt) => print_helptext(argparse::print_argument_group(Some(opt.as_str())).expect("this should be supplied with a valid option")),
+        argparse::Api::Help => {
+            print_helptext(argparse::print_argument_group(None).expect("None is valid group"))
+        }
+        argparse::Api::HelpWith(opt) => print_helptext(
+            argparse::print_argument_group(Some(opt.as_str()))
+                .expect("this should be supplied with a valid option"),
+        ),
         argparse::Api::List(list) => {
             let Ok(handle) = Alpm::new("/", "/var/lib/pacman") else {
                 eprintln!("could not connect to package database");
@@ -74,7 +79,7 @@ fn main() -> ExitCode {
                 Ok(_) => (),
                 Err(err) => {
                     eprintln!("{}", err);
-                    return ExitCode::from(3); 
+                    return ExitCode::from(3);
                 }
             }
         }

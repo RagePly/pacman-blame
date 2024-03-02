@@ -1,4 +1,4 @@
-use alpm::{Pkg, PackageReason};
+use alpm::{PackageReason, Pkg};
 use std::default::Default;
 
 enum Format<'a> {
@@ -56,7 +56,7 @@ impl<'a> CompiledFormat<'a> {
                     }
                 }
                 ParseStatus::Invalid => {
-                    return None; 
+                    return None;
                 }
                 ParseStatus::Correct(form) => {
                     format_parts.push(form);
@@ -70,22 +70,16 @@ impl<'a> CompiledFormat<'a> {
 
     pub fn display(&self, pkg: Pkg<'_>) -> String {
         let mut output = String::new();
-        self.0
-            .iter()
-            .for_each(|part| {
-                match part {
-                   Format::Text(s) => output.push_str(s),
-                   Format::Name => output.push_str(pkg.name()),
-                   Format::Summary => output.push_str(pkg.desc().unwrap_or("")),
-                   Format::Reason => {
-                       match pkg.reason() {
-                            PackageReason::Explicit => output.push_str("Explicit"),
-                            PackageReason::Depend => output.push_str("Depend"),
-                       }
-                   }
-                   Format::Version => output.push_str(pkg.version().as_str()),
-                }
-            });
+        self.0.iter().for_each(|part| match part {
+            Format::Text(s) => output.push_str(s),
+            Format::Name => output.push_str(pkg.name()),
+            Format::Summary => output.push_str(pkg.desc().unwrap_or("")),
+            Format::Reason => match pkg.reason() {
+                PackageReason::Explicit => output.push_str("Explicit"),
+                PackageReason::Depend => output.push_str("Depend"),
+            },
+            Format::Version => output.push_str(pkg.version().as_str()),
+        });
         output
     }
 }
