@@ -68,7 +68,7 @@ impl<'a> CompiledFormat<'a> {
         Some(CompiledFormat(format_parts))
     }
 
-    pub fn display(&self, pkg: Pkg<'_>) -> String {
+    pub fn display(&self, pkg: &Pkg) -> String {
         let mut output = String::new();
         self.0.iter().for_each(|part| match part {
             Format::Text(s) => output.push_str(s),

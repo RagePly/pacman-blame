@@ -60,8 +60,8 @@ impl ReqByItem {
     }
 }
 
-fn find_required_by<'h>(db: Db<'h>, pkg: Pkg<'h>, reason_filter: ReasonSelector) -> Vec<ReqByItem> {
-    let mut queue: VecDeque<Pkg<'h>> = [pkg].into();
+fn find_required_by(db: &Db, pkg: &Pkg, reason_filter: ReasonSelector) -> Vec<ReqByItem> {
+    let mut queue: VecDeque<&Pkg> = [pkg].into();
     let mut required_by: Vec<ReqByItem> = Vec::new();
 
     while !queue.is_empty() {
@@ -85,7 +85,7 @@ fn find_required_by<'h>(db: Db<'h>, pkg: Pkg<'h>, reason_filter: ReasonSelector)
             }
 
             required_by.push(req);
-            queue.push_back(*pkg);
+            queue.push_back(pkg);
         }
     }
 
@@ -147,7 +147,7 @@ pub fn list_packages(
     let mut lines: Vec<String> = Vec::new();
     for pkg in pkgs.into_iter() {
         if required_by {
-            let reqby: Vec<_> = find_required_by(local, *pkg, filter)
+            let reqby: Vec<_> = find_required_by(local, pkg, filter)
                 .into_iter()
                 .map(|r| r.draw(color))
                 .collect();
@@ -155,7 +155,7 @@ pub fn list_packages(
                 lines.push(reqby.join(" "));
             }
         } else if filter.filter(pkg.reason()).is_some() {
-            lines.push(compiled_format.display(*pkg));
+            lines.push(compiled_format.display(pkg));
         }
     }
 
