@@ -6,4 +6,4 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-alpm = { version = "3.0.5", features = ["checkver", "generate"] }
+alpm = { version = "=4.0.4", features = ["checkver", "generate"] }
